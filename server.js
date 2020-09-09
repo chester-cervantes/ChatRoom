@@ -19,11 +19,17 @@ io.on('connection', socket => {
         const user = userJoins(socket.id, username, room);
         socket.join(user.room);
 
-        socket.emit('message', formatMessage(botName, 'Welcome to Guess It!'));
+        socket.emit('message', {
+            message: formatMessage(botName, 'Welcome to Guess It!'),
+            user: botName
+        });
 
         socket.broadcast
             .to(user.room)
-            .emit('message', formatMessage(botName, `${user.username} has joined the chat!`));
+            .emit('message', formatMessage(botName, {
+                message: `${user.username} has joined the chat!`,
+                user: botName
+            }));
 
         // Send users and room info
         io.to(user.room).emit('roomUsers', {
@@ -35,7 +41,11 @@ io.on('connection', socket => {
     socket.on('disconnect', () => {
         const user = userLeaves(socket.id);
         if (user) {
-            io.to(user.room).emit('message', formatMessage(botName, `${user.username} has left the chat`));
+            io.to(user.room)
+                .emit('message', formatMessage(botName, {
+                message: `${user.username} has left the chat!`,
+                user: botName
+            }));
 
             // Send users and room info
             io.to(user.room).emit('roomUsers', {
@@ -50,7 +60,10 @@ io.on('connection', socket => {
     socket.on('chatMessage', msg => {
         const user = getCurrentUserById(socket.id);
 
-        io.to(user.room).emit('message', formatMessage(user.username, msg));
+        io.to(user.room).emit('message', {
+            message: formatMessage(user.username, msg),
+            user: user.username
+        });
     });
 
 });

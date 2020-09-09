@@ -3,23 +3,23 @@ const chatMessages = document.querySelector('.chat-messages');
 const roomName = document.getElementById("room-name");
 const roomUsers = document.getElementById("users");
 
-const { username, room } = Qs.parse(location.search, {
+const {username, room} = Qs.parse(location.search, {
     ignoreQueryPrefix: true
 });
 
 
 const socket = io();
 
-socket.emit('joinRoom', { username, room });
+socket.emit('joinRoom', {username, room});
 
-socket.on('message', message => {
-    console.log(message);
-    outputMessage(message);
+socket.on('message', ({message, user}) => {
+    // console.log(message);
+    outputMessage(message, user);
 
     scrollDown();
 });
 
-socket.on('roomUsers', ({ room, users }) => {
+socket.on('roomUsers', ({room, users}) => {
     outputRoomName(room);
     outputRoomUsers(users);
 });
@@ -28,19 +28,34 @@ chatForm.addEventListener('submit', (e) => {
     e.preventDefault();
 
     const msg = e.target.elements.msg.value;
+    console.log(msg);
     socket.emit('chatMessage', msg);
 
     clearInput(e);
 });
 
 
-function outputMessage(message) {
+function outputMessage(message, user) {
+    let isSentByCurrentUser = false;
+
     const div = document.createElement('div');
     div.classList.add('message');
-    div.innerHTML = `<p class="meta">${message.username} <span>${message.time}</span></p>
-    <p class="text">
-        ${message.text}
-    </p>`;
+
+    if (username === user) {
+        isSentByCurrentUser = true;
+    }
+
+    if (isSentByCurrentUser) {
+        div.innerHTML = `<p class="meta">You <span>${message.time}</span></p>
+                        <p class="text">
+                            ${message.text}
+                        </p>`;
+    } else {
+        div.innerHTML = `<p class="meta">${message.username} <span>${message.time}</span></p>
+                        <p class="text">
+                            ${message.text}
+                        </p>`;
+    }
     document.querySelector('.chat-messages').appendChild(div);
 }
 
@@ -48,7 +63,7 @@ function scrollDown() {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-function clearInput (e) {
+function clearInput(e) {
     e.target.elements.msg.value = '';
     e.target.elements.msg.focus();
 }
