@@ -39,18 +39,19 @@ function outputMessage(message, user) {
     let isSentByCurrentUser = false;
 
     const div = document.createElement('div');
-    div.classList.add('message');
 
     if (username === user) {
         isSentByCurrentUser = true;
     }
 
     if (isSentByCurrentUser) {
+        div.classList.add('message-by-current-user');
         div.innerHTML = `<p class="meta">You <span>${message.time}</span></p>
                         <p class="text">
                             ${message.text}
                         </p>`;
     } else {
+        div.classList.add('message');
         div.innerHTML = `<p class="meta">${message.username} <span>${message.time}</span></p>
                         <p class="text">
                             ${message.text}
